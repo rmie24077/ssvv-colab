@@ -2,6 +2,8 @@ package validation;
 
 import domain.Student;
 
+import java.util.Objects;
+
 public class StudentValidator implements Validator<Student> {
 
     /**
@@ -11,10 +13,10 @@ public class StudentValidator implements Validator<Student> {
      */
     @Override
     public void validate(Student entity) throws ValidationException {
-        if(entity.getID().equals("")){
-            throw new ValidationException("Id incorect!");
-        }
-        if(entity.getID() == null){
+//        if(entity.getID().equals("")){
+//            throw new ValidationException("Id incorect!");
+//        }
+        if(Objects.isNull(entity.getID()) || entity.getID().equals("")){
             throw new ValidationException("Id incorect!");
         }
         if(entity.getNume() == ""){
