@@ -63,7 +63,7 @@ public class AddStudent {
 
         try {
             var res = service.addStudent(student);
-            assertEquals(student, res);
+            assertEquals(null, res);
         } catch (Exception e) {
         }
 
@@ -71,11 +71,11 @@ public class AddStudent {
 
     @Test
     public void testSaveStudent_nameNotEmpty() {
-        var student = new Student("003", "Name3", 936, "name3@mail.com");
+        Student student = new Student("003", "Name3", 936, "name3@mail.com");
 
         try {
-            var res = service.addStudent(student);
-            assertEquals(student, res);
+            Student res = service.addStudent(student);
+            assertEquals(null, res);
         } catch (Exception e) {
         }
     }
@@ -108,7 +108,7 @@ public class AddStudent {
 
         try {
             var res = service.addStudent(student);
-            assertEquals(student, res);
+            assertEquals(null, res);
         } catch (Exception e) {
         }
     }
@@ -141,7 +141,7 @@ public class AddStudent {
 
         try {
             var res = service.addStudent(student);
-            assertEquals(student, res);
+            assertEquals(null, res);
         } catch (Exception e) {
         }
 
@@ -153,8 +153,9 @@ public class AddStudent {
 
         try {
             var firstSave = service.addStudent(student);
-            assertEquals(student, firstSave);
+            assertEquals(null, firstSave);
             var secondSave = service.addStudent(student);
+            assertEquals(student, secondSave);
         } catch (Exception e) {
             assertEquals("Id incorect!", e.getMessage());
         }
