@@ -1,4 +1,6 @@
+import domain.Nota;
 import domain.Student;
+import domain.Tema;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,12 +11,14 @@ import service.Service;
 import validation.NotaValidator;
 import validation.StudentValidator;
 import validation.TemaValidator;
+import validation.ValidationException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class TestStudent {
     private Service service;
@@ -133,6 +137,19 @@ public class TestStudent {
         } catch (Exception e) {
             assertEquals("Email incorect!", e.getMessage());
         }
+    }
+
+    @Test(expected = ValidationException.class)
+    public void addAssignment_assignmentNumberNull(){
+        var tema = new Tema("","descr",0,0);
+        service.addTema(tema);
+    }
+
+    @Test
+    public void addAssignment_assignmentNumberNonNull(){
+        var tema = new Tema("123","descr1",1,1);
+        var res = service.addTema(tema);
+        assertNull(res);
     }
 
     @Test
