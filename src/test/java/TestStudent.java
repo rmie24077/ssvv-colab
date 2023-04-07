@@ -1,6 +1,5 @@
 import domain.Student;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import repository.NotaXMLRepo;
@@ -18,7 +17,6 @@ import java.util.stream.StreamSupport;
 import static org.junit.Assert.assertEquals;
 
 public class TestStudent {
-
     private Service service;
 
     @Before
@@ -38,8 +36,8 @@ public class TestStudent {
     @After
     public void teardown() {
         List<Student> students = StreamSupport.stream(service.getAllStudenti()
-                                .spliterator(),
-                        false)
+                .spliterator(),
+                false)
                 .collect(Collectors.toList());
 
         for (Student s : students) {
@@ -65,7 +63,7 @@ public class TestStudent {
 
         try {
             var res = service.addStudent(student);
-            assertEquals(student, res);
+            assertEquals(null, res);
         } catch (Exception e) {
         }
 
@@ -73,11 +71,11 @@ public class TestStudent {
 
     @Test
     public void testSaveStudent_nameNotEmpty() {
-        var student = new Student("003", "Name3", 936, "name3@mail.com");
+        Student student = new Student("003", "Name3", 936, "name3@mail.com");
 
         try {
-            var res = service.addStudent(student);
-            assertEquals(student, res);
+            Student res = service.addStudent(student);
+            assertEquals(null, res);
         } catch (Exception e) {
         }
     }
@@ -110,7 +108,7 @@ public class TestStudent {
 
         try {
             var res = service.addStudent(student);
-            assertEquals(student, res);
+            assertEquals(null, res);
         } catch (Exception e) {
         }
     }
@@ -143,7 +141,7 @@ public class TestStudent {
 
         try {
             var res = service.addStudent(student);
-            assertEquals(student, res);
+            assertEquals(null, res);
         } catch (Exception e) {
         }
 
@@ -155,8 +153,9 @@ public class TestStudent {
 
         try {
             var firstSave = service.addStudent(student);
-            assertEquals(student, firstSave);
+            assertEquals(null, firstSave);
             var secondSave = service.addStudent(student);
+            assertEquals(student, secondSave);
         } catch (Exception e) {
             assertEquals("Id incorect!", e.getMessage());
         }
