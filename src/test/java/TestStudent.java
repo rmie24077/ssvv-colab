@@ -1,4 +1,5 @@
 import domain.Student;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,81 +15,177 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static org.junit.Assert.assertEquals;
+
 public class TestStudent {
-
-    private static final String VALID_ID = "student#1234";
-    private static final String INVALID_ID = null;
-
-    private static final String INVALID_ID_EMPTY = "";
-    private static final String VALID_NAME = "name123";
-    private static final String INVALID_NAME = "";
-    private static final int VALID_GROUP = 933;
-
-    private static final String VALID_EMAIL = "mail@domain.com";
 
     private Service service;
 
     @Before
     public void setup() {
         StudentValidator studentValidator = new StudentValidator();
+        StudentXMLRepo studentXMLRepo = new StudentXMLRepo("fisiere/Studenti.xml");
+
         TemaValidator temaValidator = new TemaValidator();
-        String filenameStudent = "fisiere/Studenti.xml";
-        String filenameTema = "fisiere/Teme.xml";
-        String filenameNota = "fisiere/Note.xml";
+        TemaXMLRepo temaXMLRepo = new TemaXMLRepo("fisiere/Teme.xml");
 
-        StudentXMLRepo studentXMLRepository = new StudentXMLRepo(filenameStudent);
-        TemaXMLRepo temaXMLRepository = new TemaXMLRepo(filenameTema);
-        NotaValidator notaValidator = new NotaValidator(studentXMLRepository, temaXMLRepository);
-        NotaXMLRepo notaXMLRepository = new NotaXMLRepo(filenameNota);
-        service = new Service(studentXMLRepository, studentValidator, temaXMLRepository, temaValidator, notaXMLRepository, notaValidator);
+        NotaValidator notaValidator = new NotaValidator(studentXMLRepo, temaXMLRepo);
+        NotaXMLRepo notaXMLRepo = new NotaXMLRepo("fisiere/Note.xml");
 
-        List<Student> students = StreamSupport
-                .stream(service.getAllStudenti().spliterator(), false)
+        service = new Service(studentXMLRepo, studentValidator, temaXMLRepo, temaValidator, notaXMLRepo, notaValidator);
+    }
+
+    @After
+    public void teardown() {
+        List<Student> students = StreamSupport.stream(service.getAllStudenti()
+                                .spliterator(),
+                        false)
                 .collect(Collectors.toList());
 
-        for (Student s: students) {
+        for (Student s : students) {
             service.deleteStudent(s.getID());
         }
-    }
-
-    // EC for studentId: {null, ""} = invalid, {any text}=valid
-
-    @Test
-    public void saveStudent_validId_studentSaved() {
-        // arrange
-        Student student = new Student(VALID_ID, VALID_NAME, VALID_GROUP, VALID_EMAIL);
-
-        // act
-        service.addStudent(student);
-
-        // assert
-        List<Student> students = StreamSupport
-                .stream(service.getAllStudenti().spliterator(), false)
-                .collect(Collectors.toList());
-
-        Assert.assertEquals(1, students.stream().filter(s -> s.getID() == VALID_ID).count());
+        service = null;
     }
 
     @Test
-    public void saveStudent_invalidId_studentNotSaved() {
-        // arrange
-        Student student = new Student(INVALID_ID, VALID_NAME, VALID_GROUP, VALID_EMAIL);
+    public void testSaveStudent_groupNumberBelowLowerBound() {
+        var student = new Student("001", "Name1", -1, "wtvr@mail.com");
 
-        // act
         try {
-            service.addStudent(student);
-
+            var res = service.addStudent(student);
+        } catch (Exception e) {
+            assertEquals("Grupa incorecta!", e.getMessage());
         }
-        catch (Exception e) {
+    }
 
+    @Test
+    public void testSaveStudent_groupNumberAboveLowerBound() {
+        var student = new Student("002", "Nume2", 0, "wtvr@dom.com");
+
+        try {
+            var res = service.addStudent(student);
+            assertEquals(student, res);
+        } catch (Exception e) {
         }
 
-        // assert
+    }
 
-        List<Student> students = StreamSupport
-                .stream(service.getAllStudenti().spliterator(), false)
-                .collect(Collectors.toList());
+    @Test
+    public void testSaveStudent_nameNotEmpty() {
+        var student = new Student("003", "Name3", 936, "name3@mail.com");
 
-        Assert.assertEquals(0, students.stream().filter(s -> s.getID() == VALID_ID).count());
+        try {
+            var res = service.addStudent(student);
+            assertEquals(student, res);
+        } catch (Exception e) {
+        }
+    }
+
+    @Test
+    public void testSaveStudent_nameEmpty() {
+        var student = new Student("a", "", 936, "a@mail.com");
+
+        try {
+            var res = service.addStudent(student);
+        } catch (Exception e) {
+            assertEquals("Nume incorect!", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSaveStudent_nameIsNull() {
+        var student = new Student("a", null, 936, "a@mail.com");
+
+        try {
+            var res = service.addStudent(student);
+        } catch (Exception e) {
+            assertEquals("Nume incorect!", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSaveStudent_mailNotEmpty() {
+        var student = new Student("013", "Name3", 936, "name13@mail.com");
+
+        try {
+            var res = service.addStudent(student);
+            assertEquals(student, res);
+        } catch (Exception e) {
+        }
+    }
+
+    @Test
+    public void testSaveStudent_mailEmpty() {
+        var student = new Student("0014", "spe", 936, "");
+
+        try {
+            var res = service.addStudent(student);
+        } catch (Exception e) {
+            assertEquals("Email incorect!", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSaveStudent_mailIsNull() {
+        var student = new Student("005", "spe", 936, null);
+
+        try {
+            var res = service.addStudent(student);
+        } catch (Exception e) {
+            assertEquals("Email incorect!", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSaveStudent_idNotEmptyAndNotDuplicate() {
+        var student = new Student("004", "Name4", 936, "name3@mail.com");
+
+        try {
+            var res = service.addStudent(student);
+            assertEquals(student, res);
+        } catch (Exception e) {
+        }
+
+    }
+
+    @Test
+    public void testSaveStudent_idNotEmptyAndDuplicate() {
+        var student = new Student("004", "b", 936, "b@mail.com");
+
+        try {
+            var firstSave = service.addStudent(student);
+            assertEquals(student, firstSave);
+            var secondSave = service.addStudent(student);
+        } catch (Exception e) {
+            assertEquals("Id incorect!", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSaveStudent_idEmpty() {
+        var student = new Student("", "b", 936, "nothing@mail.com");
+
+        try {
+            var res = service.addStudent(student);
+        } catch (Exception e) {
+            assertEquals("Id incorect!", e.getMessage());
+        }
+
+        //assertNull(res);
+    }
+
+    @Test
+    public void testSaveStudent_idIsNull() {
+        var student = new Student(null, "b", 936, "nothing@mail.com");
+
+        try {
+            var res = service.addStudent(student);
+        } catch (Exception e) {
+            assertEquals("Id incorect!", e.getMessage());
+        }
+
+        List<Student> students = StreamSupport.stream(service.getAllStudenti().spliterator(), false).collect(Collectors.toList());
+        assertEquals(0, students.stream().filter(s -> s.getID() == null).count());
     }
 }
