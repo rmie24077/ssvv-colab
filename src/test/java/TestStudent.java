@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class TestStudent {
     private Service service;
@@ -139,19 +138,6 @@ public class TestStudent {
         }
     }
 
-    @Test(expected = ValidationException.class)
-    public void addAssignment_assignmentNumberNull(){
-        var tema = new Tema("","descr",0,0);
-        service.addTema(tema);
-    }
-
-    @Test
-    public void addAssignment_assignmentNumberNonNull(){
-        var tema = new Tema("123","descr1",1,1);
-        var res = service.addTema(tema);
-        assertNull(res);
-    }
-
     @Test
     public void testSaveStudent_idNotEmptyAndNotDuplicate() {
         var student = new Student("004", "Name4", 936, "name3@mail.com");
@@ -203,5 +189,90 @@ public class TestStudent {
 
         List<Student> students = StreamSupport.stream(service.getAllStudenti().spliterator(), false).collect(Collectors.toList());
         assertEquals(0, students.stream().filter(s -> s.getID() == null).count());
+    }
+
+    /**
+     * Lab3 tests IC
+     */
+    @Test(expected = ValidationException.class)
+    public void addAssignment_assignmentNumberNull(){
+        var tema = new Tema("","descr",0,0);
+        service.addTema(tema);
+    }
+
+    @Test
+    public void addAssignment_assignmentNumberNonNull(){
+        var tema = new Tema("123","descr1",1,1);
+        var res = service.addTema(tema);
+        assertNull(res);
+    }
+
+    /**
+     * Lab3 tests TH
+     */
+    @Test
+    public void addAssignment_assignmentIDExists(){
+        var tema = new Tema("1234","descr1",1,1);
+        var res = service.addTema(tema);
+        assertNull(res);
+        res = service.addTema(tema);
+        assertNotNull(res);
+    }
+
+    @Test
+    public void addAssignment_deadlineOutOfRange_Under(){
+        var tema = new Tema("1234","descr1",-1,1);
+        try {
+            service.addTema(tema);
+            fail();
+        }
+        catch(ValidationException e) {
+            assertTrue(true);
+        }
+    }
+
+    @Test
+    public void addAssignment_deadlineOutOfRange_Over(){
+        var tema = new Tema("1234","descr1",15,1);
+        try {
+            service.addTema(tema);
+            fail();
+        }
+        catch(ValidationException e) {
+            assertTrue(true);
+        }
+    }
+
+    @Test
+    public void addAssignment_receivedOutOfRange_Under(){
+        var tema = new Tema("1234","descr1",1,-1);
+        try {
+            service.addTema(tema);
+            fail();
+        }
+        catch(ValidationException e) {
+            assertTrue(true);
+        }
+    }
+
+    @Test
+    public void addAssignment_receivedOutOfRange_Over(){
+        var tema = new Tema("1234","descr1",1,15);
+        try {
+            service.addTema(tema);
+            fail();
+        }
+        catch(ValidationException e) {
+            assertTrue(true);
+        }
+    }
+
+    @Test
+    public void addAssignment_assignmentExistsAlready(){
+        var tema = new Tema("123456","descr1",1,1);
+        var res = service.addTema(tema);
+        assertNull(res);
+        res = service.addTema(tema);
+        assertNotNull(res);
     }
 }
